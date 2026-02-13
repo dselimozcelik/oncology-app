@@ -369,6 +369,29 @@ export async function seedSurveys() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Oturum bulunamadı' };
 
+  // Eski anketleri sil (responses → assignments → surveys)
+  const { data: oldSurveys } = await supabase
+    .from('surveys')
+    .select('id')
+    .eq('doctor_id', user.id);
+
+  if (oldSurveys && oldSurveys.length > 0) {
+    const oldIds = oldSurveys.map((s) => s.id);
+
+    const { data: oldAssignments } = await supabase
+      .from('survey_assignments')
+      .select('id')
+      .in('survey_id', oldIds);
+
+    if (oldAssignments && oldAssignments.length > 0) {
+      const assignmentIds = oldAssignments.map((a) => a.id);
+      await supabase.from('survey_responses').delete().in('assignment_id', assignmentIds);
+      await supabase.from('survey_assignments').delete().in('id', assignmentIds);
+    }
+
+    await supabase.from('surveys').delete().in('id', oldIds);
+  }
+
   // Tüm hastaları al
   const { data: patients } = await supabase
     .from('profiles')
