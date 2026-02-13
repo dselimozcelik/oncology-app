@@ -6,7 +6,6 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { SeedSurveysButton } from './seed-button';
 
 export default async function SurveysPage() {
   const supabase = await createClient();
@@ -20,15 +19,12 @@ export default async function SurveysPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Anketler</h1>
-        <div className="flex gap-3">
-          <SeedSurveysButton />
-          <Link href="/surveys/new">
-            <Button>
-              <Plus className="h-4 w-4" />
-              Yeni Anket
-            </Button>
-          </Link>
-        </div>
+        <Link href="/surveys/new">
+          <Button>
+            <Plus className="h-4 w-4" />
+            Yeni Anket
+          </Button>
+        </Link>
       </div>
 
       <Card>
