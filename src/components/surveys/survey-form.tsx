@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { QuestionBuilder } from './question-builder';
-import { PatientSelector } from './patient-selector';
 import { createClient } from '@/lib/supabase/client';
 
 export function SurveyForm() {
@@ -16,9 +15,6 @@ export function SurveyForm() {
   const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState<SurveyQuestion[]>([]);
   const [saving, setSaving] = useState(false);
-  const [showSelector, setShowSelector] = useState(false);
-  const [surveyId, setSurveyId] = useState<string | null>(null);
-  const [assigning, setAssigning] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -41,30 +37,27 @@ export function SurveyForm() {
       .select('id')
       .single();
 
+    if (error || !data) {
+      setSaving(false);
+      return;
+    }
+
+    // Tüm hastalara otomatik ata
+    const { data: patients } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('role', 'patient');
+
+    if (patients && patients.length > 0) {
+      const rows = patients.map((p) => ({
+        survey_id: data.id,
+        patient_id: p.id,
+      }));
+      await supabase.from('survey_assignments').insert(rows);
+    }
+
     setSaving(false);
-    if (error || !data) return;
-
-    setSurveyId(data.id);
-    setShowSelector(true);
-  }
-
-  async function handleAssign(patientIds: string[]) {
-    if (!surveyId) return;
-    setAssigning(true);
-
-    const rows = patientIds.map((patient_id) => ({
-      survey_id: surveyId,
-      patient_id,
-    }));
-
-    await supabase.from('survey_assignments').insert(rows);
-    setAssigning(false);
-    setShowSelector(false);
-    router.push(`/surveys/${surveyId}`);
-  }
-
-  function handleSkipAssign() {
-    if (surveyId) router.push(`/surveys/${surveyId}`);
+    router.push(`/surveys/${data.id}`);
   }
 
   return (
@@ -104,13 +97,6 @@ export function SurveyForm() {
           </Button>
         </div>
       </form>
-
-      <PatientSelector
-        open={showSelector}
-        onClose={handleSkipAssign}
-        onAssign={handleAssign}
-        loading={assigning}
-      />
     </>
   );
 }
