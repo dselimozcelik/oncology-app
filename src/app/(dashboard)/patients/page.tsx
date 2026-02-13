@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/card';
 import { PatientTable } from '@/components/patients/patient-table';
 import { PatientFilters } from '@/components/patients/filters';
+import { AddPatientDialog } from '@/components/patients/add-patient-dialog';
 import { Suspense } from 'react';
 
 export default async function PatientsPage({
@@ -29,7 +30,10 @@ export default async function PatientsPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Hastalar</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Hastalar</h1>
+        <AddPatientDialog />
+      </div>
 
       <Suspense>
         <PatientFilters />
