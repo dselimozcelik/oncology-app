@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { SurveyAssignment, SurveyResponse, Survey, SurveyQuestion } from '@/lib/supabase/types';
 import { Badge, statusBadgeVariant, statusLabel } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Download } from 'lucide-react';
+import { downloadCSV } from '@/lib/csv';
 import { format } from 'date-fns';
 
 interface AssignmentWithDetails extends SurveyAssignment {
@@ -17,8 +19,34 @@ export function SurveysTab({ assignments }: { assignments: AssignmentWithDetails
     return <p className="text-gray-500 text-center py-8">Atanmış anket yok</p>;
   }
 
+  const handleExport = () => {
+    const headers = ['Anket Adı', 'Soru', 'Yanıt', 'Durum', 'Gönderilme Tarihi'];
+    const rows: unknown[][] = [];
+
+    assignments.forEach((a) => {
+      const questions = (a.survey?.questions ?? []) as SurveyQuestion[];
+      const raw = a.survey_responses;
+      const response = Array.isArray(raw) ? raw[0] : raw;
+      const answers = (response?.answers ?? {}) as Record<string, unknown>;
+      const status = a.status === 'completed' ? 'Tamamlandı' : a.status === 'pending' ? 'Bekliyor' : a.status;
+      const date = response?.submitted_at ? format(new Date(response.submitted_at), 'dd.MM.yyyy HH:mm') : '';
+
+      questions.forEach((q) => {
+        rows.push([a.survey?.title ?? '', q.label, answers[q.id] ?? null, status, date]);
+      });
+    });
+
+    downloadCSV('hasta-anket-yanitlari', headers, rows);
+  };
+
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <Button variant="secondary" size="sm" onClick={handleExport}>
+          <Download className="h-4 w-4" />
+          CSV İndir
+        </Button>
+      </div>
       {assignments.map((a) => (
         <AssignmentCard key={a.id} assignment={a} />
       ))}

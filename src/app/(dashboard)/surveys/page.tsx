@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { SurveysExportAll } from '@/components/surveys/export-button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
@@ -19,12 +20,32 @@ export default async function SurveysPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Anketler</h1>
-        <Link href="/surveys/new">
-          <Button>
-            <Plus className="h-4 w-4" />
-            Yeni Anket
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {surveys && surveys.length > 0 && (
+            <SurveysExportAll
+              surveys={surveys.map((s) => {
+                const assignments = (s.survey_assignments ?? []) as { status: string }[];
+                const total = assignments.length;
+                const completed = assignments.filter((a) => a.status === 'completed').length;
+                const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+                return {
+                  title: s.title,
+                  created_at: s.created_at,
+                  is_active: s.is_active,
+                  total,
+                  completed,
+                  rate,
+                };
+              })}
+            />
+          )}
+          <Link href="/surveys/new">
+            <Button>
+              <Plus className="h-4 w-4" />
+              Yeni Anket
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card>

@@ -4,6 +4,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { ResponseViewer } from '@/components/surveys/response-viewer';
+import { SurveyExportButton } from '@/components/surveys/export-button';
 import { ArrowLeft, Users, CheckCircle, Percent } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -35,7 +36,7 @@ export default async function SurveyDetailPage({
 
   const { data: assignments } = await supabase
     .from('survey_assignments')
-    .select('*, patient:profiles(full_name, email), survey_responses(*)')
+    .select('*, patient:profiles(full_name,email), survey_responses(*)')
     .eq('survey_id', id)
     .order('assigned_at', { ascending: false });
 
@@ -50,7 +51,7 @@ export default async function SurveyDetailPage({
         <Link href="/surveys" className="text-gray-400 hover:text-gray-600">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900">{survey.title}</h1>
             <Badge variant={survey.is_active ? 'success' : 'default'}>
@@ -64,6 +65,18 @@ export default async function SurveyDetailPage({
             Oluşturulma: {format(new Date(survey.created_at), 'dd.MM.yyyy')}
           </p>
         </div>
+        {assignments && assignments.length > 0 && (
+          <SurveyExportButton
+            surveyTitle={survey.title}
+            questions={questions}
+            assignments={assignments.map((a) => ({
+              status: a.status,
+              completed_at: a.completed_at,
+              patient: a.patient as unknown as { full_name: string; email: string } | null,
+              survey_responses: a.survey_responses as SurveyResponse[] | SurveyResponse | null,
+            }))}
+          />
+        )}
       </div>
 
       {survey.image_url && (
