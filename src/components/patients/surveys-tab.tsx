@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 
 interface AssignmentWithDetails extends SurveyAssignment {
   survey: Survey;
-  survey_responses: SurveyResponse[];
+  survey_responses: SurveyResponse[] | SurveyResponse | null;
 }
 
 export function SurveysTab({ assignments }: { assignments: AssignmentWithDetails[] }) {
@@ -28,7 +28,8 @@ export function SurveysTab({ assignments }: { assignments: AssignmentWithDetails
 
 function AssignmentCard({ assignment }: { assignment: AssignmentWithDetails }) {
   const [expanded, setExpanded] = useState(false);
-  const response = assignment.survey_responses?.[0];
+  const raw = assignment.survey_responses;
+  const response = Array.isArray(raw) ? raw[0] : raw;
   const questions = (assignment.survey?.questions ?? []) as SurveyQuestion[];
 
   return (
@@ -68,9 +69,11 @@ function AssignmentCard({ assignment }: { assignment: AssignmentWithDetails }) {
         </div>
       )}
 
-      {expanded && !response && assignment.status === 'pending' && (
+      {expanded && !response && (
         <div className="px-6 pb-4 border-t border-gray-100 pt-4">
-          <p className="text-sm text-gray-500">Hastadan yanıt bekleniyor</p>
+          <p className="text-sm text-gray-500">
+            {assignment.status === 'completed' ? 'Yanıt kaydı bulunamadı' : 'Hastadan yanıt bekleniyor'}
+          </p>
         </div>
       )}
     </Card>

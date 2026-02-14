@@ -114,13 +114,14 @@ export default async function SurveyDetailPage({
           <div>
             {assignments.map((a) => {
               const patient = a.patient as unknown as { full_name: string } | null;
-              const responses = (a.survey_responses ?? []) as SurveyResponse[];
+              const raw = a.survey_responses;
+              const response = Array.isArray(raw) ? (raw as SurveyResponse[])[0] ?? null : (raw as SurveyResponse | null);
               return (
                 <ResponseViewer
                   key={a.id}
                   patientName={patient?.full_name ?? 'Bilinmiyor'}
                   questions={questions}
-                  response={responses[0] ?? null}
+                  response={response}
                   completedAt={a.completed_at}
                   status={a.status}
                 />
