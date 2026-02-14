@@ -44,11 +44,24 @@ create table public.surveys (
   doctor_id uuid references public.profiles(id) not null,
   title text not null,
   description text,
+  image_url text,
   questions jsonb not null default '[]',
   is_active boolean default true,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Storage bucket for survey images
+insert into storage.buckets (id, name, public) values ('survey-images', 'survey-images', true);
+
+create policy "Doctors can upload survey images" on storage.objects
+  for insert with check (bucket_id = 'survey-images' and public.get_user_role() = 'doctor');
+
+create policy "Doctors can delete survey images" on storage.objects
+  for delete using (bucket_id = 'survey-images' and public.get_user_role() = 'doctor');
+
+create policy "Anyone can view survey images" on storage.objects
+  for select using (bucket_id = 'survey-images');
 
 alter table public.surveys enable row level security;
 

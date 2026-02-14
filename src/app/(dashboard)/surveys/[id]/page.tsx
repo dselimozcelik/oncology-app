@@ -66,6 +66,14 @@ export default async function SurveyDetailPage({
         </div>
       </div>
 
+      {survey.image_url && (
+        <img
+          src={survey.image_url}
+          alt={survey.title}
+          className="w-full max-w-2xl h-56 rounded-xl border border-gray-200 object-cover"
+        />
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard title="Atanan" value={total} icon={Users} color="blue" />
         <StatCard title="Tamamlanan" value={completed} icon={CheckCircle} color="green" />

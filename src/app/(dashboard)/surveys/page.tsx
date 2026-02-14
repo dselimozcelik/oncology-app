@@ -48,7 +48,14 @@ export default async function SurveysPage() {
               return (
                 <TableRow key={survey.id}>
                   <TableCell>
-                    <Link href={`/surveys/${survey.id}`} className="text-blue-600 hover:text-blue-800 font-medium">
+                    <Link href={`/surveys/${survey.id}`} className="flex items-center gap-3 text-blue-600 hover:text-blue-800 font-medium">
+                      {survey.image_url && (
+                        <img
+                          src={survey.image_url}
+                          alt=""
+                          className="h-9 w-9 rounded-md object-cover shrink-0"
+                        />
+                      )}
                       {survey.title}
                     </Link>
                   </TableCell>
