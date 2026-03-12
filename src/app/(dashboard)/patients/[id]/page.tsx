@@ -6,6 +6,7 @@ import { InfoTab } from '@/components/patients/info-tab';
 import { SleepTab } from '@/components/patients/sleep-tab';
 import { NutritionTab } from '@/components/patients/nutrition-tab';
 import { SurveysTab } from '@/components/patients/surveys-tab';
+import { DeletePatientButton } from '@/components/patients/delete-patient-button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { subDays, format } from 'date-fns';
@@ -35,17 +36,20 @@ export default async function PatientDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/patients" className="text-gray-400 hover:text-gray-600">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{patient.full_name}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <Badge variant={statusBadgeVariant(patient.status)}>{statusLabel(patient.status)}</Badge>
-            <span className="text-sm text-gray-500">{patient.email}</span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href="/patients" className="text-gray-400 hover:text-gray-600">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{patient.full_name}</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge variant={statusBadgeVariant(patient.status)}>{statusLabel(patient.status)}</Badge>
+              <span className="text-sm text-gray-500">{patient.email}</span>
+            </div>
           </div>
         </div>
+        <DeletePatientButton patientId={patient.id} patientName={patient.full_name} />
       </div>
 
       <Tabs defaultValue="info">

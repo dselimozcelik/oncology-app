@@ -53,3 +53,23 @@ export async function createPatient(input: CreatePatientInput) {
   revalidatePath('/patients');
   return { success: true };
 }
+
+export async function deletePatient(patientId: string) {
+  const { error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .delete()
+    .eq('id', patientId);
+
+  if (profileError) {
+    return { error: profileError.message };
+  }
+
+  const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(patientId);
+
+  if (authError) {
+    return { error: authError.message };
+  }
+
+  revalidatePath('/patients');
+  return { success: true };
+}
