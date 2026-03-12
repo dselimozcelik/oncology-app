@@ -1,4 +1,4 @@
--- Studies (çalışmalar)
+-- 1) Tüm tabloları oluştur
 create table public.studies (
   id uuid default gen_random_uuid() primary key,
   doctor_id uuid references public.profiles(id) not null,
@@ -8,8 +8,38 @@ create table public.studies (
   updated_at timestamptz default now()
 );
 
-alter table public.studies enable row level security;
+create table public.study_periods (
+  id uuid default gen_random_uuid() primary key,
+  study_id uuid references public.studies(id) on delete cascade not null,
+  name text not null,
+  sort_order integer not null default 0,
+  created_at timestamptz default now()
+);
 
+create table public.study_period_surveys (
+  id uuid default gen_random_uuid() primary key,
+  period_id uuid references public.study_periods(id) on delete cascade not null,
+  survey_id uuid references public.surveys(id) on delete cascade not null,
+  unique(period_id, survey_id)
+);
+
+create table public.patient_studies (
+  id uuid default gen_random_uuid() primary key,
+  study_id uuid references public.studies(id) on delete cascade not null,
+  patient_id uuid references public.profiles(id) on delete cascade not null,
+  assigned_at timestamptz default now(),
+  unique(study_id, patient_id)
+);
+
+-- 2) RLS aç
+alter table public.studies enable row level security;
+alter table public.study_periods enable row level security;
+alter table public.study_period_surveys enable row level security;
+alter table public.patient_studies enable row level security;
+
+-- 3) Tüm policy'ler (tablolar artık mevcut, circular dependency yok)
+
+-- studies
 create policy "Doctors can do everything with studies" on public.studies
   for all using (public.get_user_role() = 'doctor');
 
@@ -21,17 +51,7 @@ create policy "Patients can view studies they belong to" on public.studies
     )
   );
 
--- Study periods (ay klasörleri)
-create table public.study_periods (
-  id uuid default gen_random_uuid() primary key,
-  study_id uuid references public.studies(id) on delete cascade not null,
-  name text not null,
-  sort_order integer not null default 0,
-  created_at timestamptz default now()
-);
-
-alter table public.study_periods enable row level security;
-
+-- study_periods
 create policy "Doctors can do everything with study_periods" on public.study_periods
   for all using (public.get_user_role() = 'doctor');
 
@@ -44,16 +64,7 @@ create policy "Patients can view own study periods" on public.study_periods
     )
   );
 
--- Surveys in a period
-create table public.study_period_surveys (
-  id uuid default gen_random_uuid() primary key,
-  period_id uuid references public.study_periods(id) on delete cascade not null,
-  survey_id uuid references public.surveys(id) on delete cascade not null,
-  unique(period_id, survey_id)
-);
-
-alter table public.study_period_surveys enable row level security;
-
+-- study_period_surveys
 create policy "Doctors can do everything with study_period_surveys" on public.study_period_surveys
   for all using (public.get_user_role() = 'doctor');
 
@@ -66,22 +77,13 @@ create policy "Patients can view own study period surveys" on public.study_perio
     )
   );
 
--- Patient-study assignments
-create table public.patient_studies (
-  id uuid default gen_random_uuid() primary key,
-  study_id uuid references public.studies(id) on delete cascade not null,
-  patient_id uuid references public.profiles(id) on delete cascade not null,
-  assigned_at timestamptz default now(),
-  unique(study_id, patient_id)
-);
-
-alter table public.patient_studies enable row level security;
-
+-- patient_studies
 create policy "Doctors can do everything with patient_studies" on public.patient_studies
   for all using (public.get_user_role() = 'doctor');
 
 create policy "Patients can view own patient_studies" on public.patient_studies
   for select using (auth.uid() = patient_id);
 
+-- 4) Trigger
 create trigger studies_updated_at before update on public.studies
   for each row execute function public.handle_updated_at();
