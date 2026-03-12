@@ -6,6 +6,7 @@ import { InfoTab } from '@/components/patients/info-tab';
 import { SleepTab } from '@/components/patients/sleep-tab';
 import { NutritionTab } from '@/components/patients/nutrition-tab';
 import { SurveysTab } from '@/components/patients/surveys-tab';
+import { StudiesTab } from '@/components/patients/studies-tab';
 import { DeletePatientButton } from '@/components/patients/delete-patient-button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -25,11 +26,16 @@ export default async function PatientDetailPage({
     { data: sleepRecords },
     { data: foodEntries },
     { data: assignments },
+    { data: patientStudies },
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).single(),
     supabase.from('sleep_records').select('*').eq('patient_id', id).gte('date', thirtyDaysAgo).order('date', { ascending: false }),
     supabase.from('food_entries').select('*').eq('patient_id', id).gte('date', thirtyDaysAgo).order('date', { ascending: false }),
     supabase.from('survey_assignments').select('*, survey:surveys(*), survey_responses(*)').eq('patient_id', id).order('assigned_at', { ascending: false }),
+    supabase
+      .from('patient_studies')
+      .select('id, study:studies(*, study_periods(*, study_period_surveys(*, survey:surveys(*))))')
+      .eq('patient_id', id),
   ]);
 
   if (!patient) notFound();
@@ -58,6 +64,7 @@ export default async function PatientDetailPage({
           <TabsTrigger value="sleep">Uyku</TabsTrigger>
           <TabsTrigger value="nutrition">Beslenme</TabsTrigger>
           <TabsTrigger value="surveys">Anketler</TabsTrigger>
+          <TabsTrigger value="studies">Çalışmalar</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
@@ -74,6 +81,13 @@ export default async function PatientDetailPage({
 
         <TabsContent value="surveys">
           <SurveysTab assignments={(assignments as never) ?? []} />
+        </TabsContent>
+
+        <TabsContent value="studies">
+          <StudiesTab
+            patientStudies={(patientStudies as never) ?? []}
+            assignments={(assignments as never) ?? []}
+          />
         </TabsContent>
       </Tabs>
     </div>

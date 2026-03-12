@@ -91,6 +91,40 @@ export interface FoodEntry {
   created_at: string;
 }
 
+export interface Study {
+  id: string;
+  doctor_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudyPeriod {
+  id: string;
+  study_id: string;
+  name: string;
+  sort_order: number;
+  created_at: string;
+  study_period_surveys?: StudyPeriodSurvey[];
+}
+
+export interface StudyPeriodSurvey {
+  id: string;
+  period_id: string;
+  survey_id: string;
+  survey?: Survey;
+}
+
+export interface PatientStudy {
+  id: string;
+  study_id: string;
+  patient_id: string;
+  assigned_at: string;
+  study?: Study;
+  patient?: Profile;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -100,6 +134,10 @@ export interface Database {
       survey_responses: { Row: SurveyResponse };
       sleep_records: { Row: SleepRecord };
       food_entries: { Row: FoodEntry };
+      studies: { Row: Study };
+      study_periods: { Row: StudyPeriod };
+      study_period_surveys: { Row: StudyPeriodSurvey };
+      patient_studies: { Row: PatientStudy };
     };
   };
 }

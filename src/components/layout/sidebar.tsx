@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Users, ClipboardList, Stethoscope, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, FolderOpen, Stethoscope, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Panel', icon: LayoutDashboard },
   { href: '/patients', label: 'Hastalar', icon: Users },
   { href: '/surveys', label: 'Anketler', icon: ClipboardList },
+  { href: '/studies', label: 'Çalışmalar', icon: FolderOpen },
 ];
 
 export function Sidebar() {
